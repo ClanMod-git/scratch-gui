@@ -1,4 +1,4 @@
-scratch-gui modified for use in [TurboWarp](https://turbowarp.org/)
+scratch-gui modified for use in [TurboWarp](https://turbowarp.org/editor) then modified for use in [ClanMod](https://play.clanmod.de)
 
 ## Setup
 
