@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 19.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve">
+<!-- Generator: Adobe Illustrator 19.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0) -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 14 14" style="enable-background:new 0 0 14 14;" xml:space="preserve">
 <style type="text/css">
-	.st0{fill:#EC5959;stroke:#B84848;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}
+    .st0{fill:url(#pinkRedGrad);stroke:url(#pinkRedStrokeGrad);stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;}
 </style>
+<defs>
+    <linearGradient id="pinkRedGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#FF758C" />
+        <stop offset="100%" stop-color="#FF416C" />
+    </linearGradient>
+    <linearGradient id="pinkRedStrokeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#D84362" />
+        <stop offset="100%" stop-color="#B82449" />
+    </linearGradient>
+</defs>
 <polygon class="st0" points="4.3,0.5 9.7,0.5 13.5,4.3 13.5,9.7 9.7,13.5 4.3,13.5 0.5,9.7 0.5,4.3 "/>
 </svg>
