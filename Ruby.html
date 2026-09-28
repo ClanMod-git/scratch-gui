@@ -117,5 +117,62 @@
       const logger = new ConsoleLogger();
       logger.info("debugging active, initializing.");
     </script>
+
+    
+<button>Download Code</button>
+    <script>
+        class LanguageDetector {
+  static detect(code) {
+    const trimmed = code.trim();
+
+    // PHP: <?php tag, $var declarations, or echo statements
+    if (trimmed.startsWith('<?php') || /^\$[a-zA-Z_]\w*/m.test(trimmed) || /\becho\b/.test(trimmed)) {
+      return { ext: 'php', mime: 'text/x-php', defaultFile: 'index.php' };
+    }
+
+    // Python: def, import, elif, print(...)
+    if (/\bdef\s+\w+\(/.test(trimmed) || /\bimport\s+\w+/.test(trimmed) || /\belif\b/.test(trimmed) || /\bprint\s*\(/.test(trimmed)) {
+      return { ext: 'py', mime: 'text/x-python', defaultFile: 'app.py' };
+    }
+
+    // Ruby: puts, require, end, def without parens
+    if (/\bputs\b/.test(trimmed) || /\brequire\s+['"]/.test(trimmed) || /\bend\b/.test(trimmed) || /\bdef\s+\w+[\s\n]/.test(trimmed)) {
+      return { ext: 'rb', mime: 'text/x-ruby', defaultFile: 'server.rb' };
+    }
+
+    // Default fallback
+    return { ext: 'rb', mime: 'text/plain', defaultFile: 'server.rb' };
+  }
+}
+
+function downloadScript(code, customFilename = null) {
+  if (!code || !code.trim()) return;
+
+  const lang = LanguageDetector.detect(code);
+  let content = code;
+
+  // Auto-prepend opening tag for PHP if missing
+  if (lang.ext === 'php' && !content.trim().startsWith('<?php')) {
+    content = "<?php\n\n" + content;
+  }
+
+  const filename = customFilename || lang.defaultFile;
+  const blob = new Blob([content], { type: lang.mime });
+  const url = URL.createObjectURL(blob);
+  
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// Usage Example:
+// downloadScript(codeTextarea.value);
+    </script>
+
 </body>
 </html>
