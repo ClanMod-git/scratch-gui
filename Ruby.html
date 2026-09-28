@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClanMod - Ruby playground</title>
+    <style>
+      body {
+        font-family: Arial, Helvetica Neue, sans-serif;
+        background-color: #121212;
+        color: #e0e0e0;
+        padding: 20px;
+      }
+
+      .editor-container {
+        margin-bottom: 20px;
+      }
+
+      textarea {
+        width: 100%;
+        height: 150px;
+        background-color: #1e1e1e;
+        color: #d4d4d4;
+        border: 1px solid #333;
+        border-radius: 6px;
+        padding: 12px;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 14px;
+        box-sizing: border-box;
+        resize: vertical;
+      }
+
+      button {
+        background-color: #2563eb;
+        color: #ffffff;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-top: 8px;
+      }
+
+      button:hover {
+        background-color: #1d4ed8;
+      }
+
+      .console {
+        background-color: #1e1e1e;
+        border: 1px solid #333;
+        border-radius: 6px;
+        font-family: 'Courier New', Courier, monospace;
+        padding: 12px;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+
+      .console-output {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .log-entry {
+        display: flex;
+        gap: 8px;
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      .timestamp {
+        color: #858585;
+      }
+
+      .level {
+        font-weight: bold;
+        min-width: 50px;
+      }
+
+      .message {
+        color: #d4d4d4;
+        white-space: pre-wrap;
+      }
+
+      /* Log Level Colors */
+      .log-entry.debug .level { color: #35b3ee; }
+      .log-entry.info  .level { color: #4ec9b0; }
+      .log-entry.warn  .level { color: #ce9178; }
+      .log-entry.error .level { color: #f14c4c; }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>ClanMod Console</h1>
+        
+        <div class="editor-container">
+          <textarea id="code-input" placeholder="Paste or type PHP, Python, or Ruby code here..."></textarea>
+          <button id="download-btn">Download Code</button>
+        </div>
+
+        <div class="console">
+          <div class="console-output" id="console-output">
+            <!-- Dynamic logs append here -->
+          </div>
+        </div>
+        <p>Converts <code>index.php</code>, <code>script.py</code>, and <code>index.rb</code> instantly.</p>
+    </main>
+
+    <!-- Template for Console Logger -->
+    <template id="log-entry-template">
+      <div class="log-entry">
+        <span class="timestamp"></span>
+        <span class="level"></span>
+        <span class="message"></span>
+      </div>
+    </template>
+
+    <footer>
+        <p>&copy; 2026 ClanMod</p>
+    </footer>
+
+    <script>
+      class ConsoleLogger {
+        constructor(outputId = 'console-output', templateId = 'log-entry-template') {
+          this.container = document.getElementById(outputId);
+          this.template = document.getElementById(templateId);
+          // Target scrollable parent .console element
+          this.scrollParent = this.container ? this.container.closest('.console') : null;
+        }
+
+        render(data) {
+          if (!this.container || !this.template) return;
+
+          const clone = this.template.content.cloneNode(true);
+          const entry = clone.querySelector('.log-entry');
+
+          entry.classList.add(data.level.toLowerCase());
+          clone.querySelector('.timestamp').textContent = `[${data.timestamp}]`;
+          clone.querySelector('.level').textContent = data.level.toUpperCase();
+          clone.querySelector('.message').textContent = data.message;
+
+          this.container.appendChild(clone);
+          if (this.scrollParent) {
+            this.scrollParent.scrollTop = this.scrollParent.scrollHeight;
+          }
+        }
+
+        log(level, message) {
+          const now = new Date();
+          const timestamp = now.toISOString().replace('T', ' ').substring(0, 19);
+          this.render({ timestamp, level, message });
+        }
+
+        debug(msg) { this.log('debug', msg); }
+        info(msg)  { this.log('info', msg); }
+        warn(msg)  { this.log('warn', msg); }
+        error(msg) { this.log('error', msg); }
+      }
+
+      class LanguageDetector {
+        static detect(code) {
+          const trimmed = code.trim();
+
+          // PHP: <?php tag, $var declarations, or echo statements
+          if (trimmed.startsWith('<?php') || /^\$[a-zA-Z_]\w*/m.test(trimmed) || /\becho\b/.test(trimmed)) {
+            return { ext: 'php', mime: 'text/x-php', defaultFile: 'index.php' };
+          }
+
+          // Python: def, import, elif, print(...)
+          if (/\bdef\s+\w+\(/.test(trimmed) || /\bimport\s+\w+/.test(trimmed) || /\belif\b/.test(trimmed) || /\bprint\s*\(/.test(trimmed)) {
+            return { ext: 'py', mime: 'text/x-python', defaultFile: 'app.py' };
+          }
+
+          // Ruby: puts, require, end, def without parens
+          if (/\bputs\b/.test(trimmed) || /\brequire\s+['"]/.test(trimmed) || /\bend\b/.test(trimmed) || /\bdef\s+\w+[\s\n]/.test(trimmed)) {
+            return { ext: 'rb', mime: 'text/x-ruby', defaultFile: 'server.rb' };
+          }
+
+          // Default fallback
+          return { ext: 'rb', mime: 'text/plain', defaultFile: 'server.rb' };
+        }
+      }
+
+      function downloadScript(code, customFilename = null) {
+        if (!code || !code.trim()) {
+          logger.warn("Attempted to download empty code.");
+          return;
+        }
+
+        const lang = LanguageDetector.detect(code);
+        let content = code;
+
+        // Auto-prepend opening tag for PHP if missing
+        if (lang.ext === 'php' && !content.trim().startsWith('<?php')) {
+          content = "<?php\n\n" + content;
+        }
+
+        const filename = customFilename || lang.defaultFile;
+        const blob = new Blob([content], { type: lang.mime });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        logger.info(`Downloaded script as ${filename} (${lang.ext.toUpperCase()})`);
+      }
+
+      const logger = new ConsoleLogger();
+      logger.info("Debugging active, initializing.");
+
+      document.getElementById('download-btn').addEventListener('click', () => {
+        const code = document.getElementById('code-input').value;
+        downloadScript(code);
+      });
+    </script>
+</body>
+</html>
