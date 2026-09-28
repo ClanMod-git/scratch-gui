@@ -12,9 +12,157 @@
 </head>
 <body>
     <main>
+        <div class="console">
+  <div class="console-output" id="console-output">
+    <!-- Log entries will be dynamically appended here by PHP, Ruby, Python, or JS -->
+  </div>
+</div>
         <p>Converts <code>index.php</code>, <code>script.py</code>, and <code>index.rb</code> instantly.</p>
     </main>
+</style>
+.console {
+  background-color: #1e1e1e;
+  border-radius: 6px;
+  font-family: monospace;
+  padding: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+}
 
+.console-output {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.log-entry {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.timestamp {
+  color: #858585;
+}
+
+.level {
+  font-weight: bold;
+  min-width: 50px;
+}
+
+.message {
+  color: #d4d4d4;
+  white-space: pre-wrap;
+}
+
+/* Log Level Colors */
+.log-entry.debug .level { color: #35b3ee; }
+.log-entry.info  .level { color: #4ec9b0; }
+.log-entry.warn  .level { color: #ce9178; }
+.log-entry.error .level { color: #f14c4c; }
+    </style>
+    <script>
+        // JS
+class ConsoleLogger {
+  constructor(outputId = 'console-output', templateId = 'log-entry-template') {
+    this.container = document.getElementById(outputId);
+    this.template = document.getElementById(templateId);
+  }
+
+  log(level, message) {
+    if (!this.container || !this.template) return;
+
+    const clone = this.template.content.cloneNode(true);
+    const entry = clone.querySelector('.log-entry');
+    
+    const now = new Date();
+    const timestamp = now.toISOString().replace('T', ' ').substring(0, 19);
+
+    entry.classList.add(level.toLowerCase());
+    clone.querySelector('.timestamp').textContent = `[${timestamp}]`;
+    clone.querySelector('.level').textContent = level.toUpperCase();
+    clone.querySelector('.message').textContent = message;
+
+    this.container.appendChild(clone);
+    this.container.scrollTop = this.container.scrollHeight;
+  }
+
+  debug(msg) { this.log('debug', msg); }
+  info(msg)  { this.log('info', msg); }
+  warn(msg)  { this.log('warn', msg); }
+  error(msg) { this.log('error', msg); }
+}
+
+const logger = new ConsoleLogger();
+        const { spawn } = require('child_process');
+
+function runRubyScript(scriptPath, renderer) {
+  const rubyProcess = spawn('ruby', [scriptPath]);
+
+  rubyProcess.stdout.on('data', (data) => {
+    renderer.render({
+      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      level: 'INFO',
+      message: data.toString().trim()
+    });
+  });
+
+  rubyProcess.stderr.on('data', (data) => {
+    renderer.render({
+      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      level: 'ERROR',
+      message: data.toString().trim()
+    });
+  });
+}
+        const { spawn } = require('child_process');
+
+function runPythonScript(scriptPath, renderer) {
+  const pythonProcess = spawn('python3', [scriptPath]);
+
+  pythonProcess.stdout.on('data', (data) => {
+    renderer.render({
+      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      level: 'INFO',
+      message: data.toString().trim()
+    });
+  });
+
+  pythonProcess.stderr.on('data', (data) => {
+    renderer.render({
+      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      level: 'ERROR',
+      message: data.toString().trim()
+    });
+  });
+}
+        const { spawn } = require('child_process');
+
+function runPhpScript(scriptPath, renderer) {
+  // Executes PHP CLI directly
+  const phpProcess = spawn('php', [scriptPath]);
+
+  // Standard output (stdout) -> INFO level
+  phpProcess.stdout.on('data', (data) => {
+    renderer.render({
+      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      level: 'INFO',
+      message: data.toString().trim()
+    });
+  });
+
+  // Standard error / exceptions (stderr) -> ERROR level
+  phpProcess.stderr.on('data', (data) => {
+    renderer.render({
+      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      level: 'ERROR',
+      message: data.toString().trim()
+    });
+  });
+}
+
+    </script>
     <footer>
         <p>&copy; 2026 ClanMod</p>
     </footer>
