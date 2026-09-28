@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClanMod - Ruby playground</title>
+    <style>
+      body {
+        font-family: Arial, Helvetica Neue, sans-serif;
+        background-color: #121212;
+        color: #e0e0e0;
+        padding: 20px;
+      }
+
+      .console {
+        background-color: #1e1e1e;
+        border: 1px solid #333;
+        border-radius: 6px;
+        font-family: 'Courier New', Courier, monospace;
+        padding: 12px;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .console-output {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .log-entry {
+        display: flex;
+        gap: 8px;
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      .timestamp {
+        color: #858585;
+      }
+
+      .level {
+        font-weight: bold;
+        min-width: 50px;
+      }
+
+      .message {
+        color: #d4d4d4;
+        white-space: pre-wrap;
+      }
+
+      /* Log Level Colors */
+      .log-entry.debug .level { color: #35b3ee; }
+      .log-entry.info  .level { color: #4ec9b0; }
+      .log-entry.warn  .level { color: #ce9178; }
+      .log-entry.error .level { color: #f14c4c; }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>ClanMod Console</h1>
+        <div class="console">
+          <div class="console-output" id="console-output">
+            <!-- Dynamic logs append here -->
+          </div>
+        </div>
+        <p>Converts <code>index.php</code>, <code>script.py</code>, and <code>index.rb</code> instantly.</p>
+    </main>
+
+    <!-- Template for Console Logger -->
+    <template id="log-entry-template">
+      <div class="log-entry">
+        <span class="timestamp"></span>
+        <span class="level"></span>
+        <span class="message"></span>
+      </div>
+    </template>
+
+    <footer>
+        <p>&copy; 2026 ClanMod</p>
+    </footer>
+
+    <script>
+      class ConsoleLogger {
+        constructor(outputId = 'console-output', templateId = 'log-entry-template') {
+          this.container = document.getElementById(outputId);
+          this.template = document.getElementById(templateId);
+        }
+
+        render(data) {
+          if (!this.container || !this.template) return;
+
+          const clone = this.template.content.cloneNode(true);
+          const entry = clone.querySelector('.log-entry');
+
+          entry.classList.add(data.level.toLowerCase());
+          clone.querySelector('.timestamp').textContent = `[${data.timestamp}]`;
+          clone.querySelector('.level').textContent = data.level.toUpperCase();
+          clone.querySelector('.message').textContent = data.message;
+
+          this.container.appendChild(clone);
+          this.container.scrollTop = this.container.scrollHeight;
+        }
+
+        log(level, message) {
+          const now = new Date();
+          const timestamp = now.toISOString().replace('T', ' ').substring(0, 19);
+          this.render({ timestamp, level, message });
+        }
+
+        debug(msg) { this.log('debug', msg); }
+        info(msg)  { this.log('info', msg); }
+        warn(msg)  { this.log('warn', msg); }
+        error(msg) { this.log('error', msg); }
+      }
+
+      const logger = new ConsoleLogger();
+      logger.info("debugging active, initializing.");
+    </script>
+</body>
+</html>
